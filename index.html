@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html>
+        <head>
+           <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+           <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+           <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        </head>   
+        <style>
+            li.borderless {
+                     border: none;
+                     padding: 5px 15px;
+                     margin-bottom: 0;
+            }
+            ul.borderless {
+                margin-bottom: 0;
+            }
+        </style>             
+<body>
+
+<div id="div1" class="container borderless">
+    <h2>Contact Tree</h2>
+</div>
+
+<script>
+
+var contacts = [
+    {
+        id:1,
+        name: "Friends",
+        type: "Group",
+        contacts: [
+            {id:2, name: "Udi", type: "Contact"},
+            {id:3, name: "Tommy", type: "Contact"},
+            {
+                id:6,
+                name: "Old Friends",
+                type: "Group",
+                contacts: [
+                    {id:7, name: "Itay", type: "Contact"},
+                ]
+            },
+        ]
+    },
+    {
+        id:4,
+        name: "Family",
+        type: "Group",
+        contacts: [
+            {id:5, name: "Roni", type: "Contact"},
+        ]
+    },
+    {id: 8, name: "Ori", type: "Contact"},
+];
+
+var ulContact=$("<ul/>").attr("id","myUl").attr("class","list-group borderless");
+    jQuery("#div1").append(ulContact);
+    
+    function buildContacts(parentName) {
+        var childArray = []; 
+        var s="";
+
+        var data_filter = contacts.filter(function (element) {
+           if (element.type.toString() == "Group") {
+               return element.name == parentName;
+           }
+        });
+        
+        if (data_filter.length == 0) { //nested contact                    
+                contacts.forEach(function(e) {                    
+                    if (e.contacts !=undefined) {
+                      data_filter = data_filter.concat(e.contacts.filter(function(c) {
+                             return (c.name === parentName);
+                      }));
+                    }
+                 });
+        }    
+    
+       for (var i=0; i < data_filter.length; i++) {
+            if (data_filter[i].name == parentName && data_filter[i].contacts != undefined) {            
+                childArray = data_filter[i].contacts; 
+                s+="<ul class='list-group borderless'>";                
+                for (var i=0; i < childArray.length; i++) {            
+                    if (i==0) { //active first child 
+                        s+= "<li id='" + childArray[i].name + "'class='list-group-item borderless active " + childArray[i].type + "'>" + childArray[i].name;    
+                    }
+                    else {
+                        s+= "<li id='" + childArray[i].name + "'class='list-group-item borderless " + childArray[i].type + "'>" + childArray[i].name;    
+                    }
+                    s+= "</li>";                    
+                }    
+                s+="</ul>";
+                return s;        
+            }
+        }
+    }
+
+    function buildContactList(contact){
+        var s = "";       
+        for (var i=0; i<contact.length; i++) {           
+            s+= "<li id='" + contact[i].name + "'class='list-group-item borderless " + contact[i].type + "'>" + contact[i].name;    
+            s+="</li>";                                
+        }
+        return s+="</ul>";
+    }
+   
+    $("#myUl").append(buildContactList(contacts));
+
+    $("li:first-child").addClass("active");
+    
+    $(".list-group .list-group-item").click(function(e) {
+         $(".list-group .list-group-item").removeClass("active");
+         $(e.target).addClass("active");
+    });
+
+    $('.Group').click(function(event){
+       var kids = $( event.target ).children();
+       if (kids.length == 0) {
+           var pos=$(event.target).attr("id");
+           $(event.target).closest('li.Group').append(buildContacts(pos));
+           $(event.target).closest('li.Group').removeClass("active");           
+        }
+        else {
+            $(event.target).find('ul').parent().addClass("active"); //active parent when child collapse
+            $(event.target).find('ul').remove();
+       }
+    }); 
+  </script>
+</body>
+</html>
